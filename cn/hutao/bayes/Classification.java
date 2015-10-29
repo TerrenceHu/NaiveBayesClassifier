@@ -23,7 +23,7 @@ public class Classification<F, C> {
     /**
      * The probability that the featureset belongs to the given category.
      */
-    private float probability;
+    private double probability;
 
     /**
      * Constructs a new Classification with the parameters given.
@@ -32,7 +32,7 @@ public class Classification<F, C> {
      * @param category The category.
      * @param probability The probability.
      */
-    public Classification(Collection<F> featureset, C category, float probability) {
+    public Classification(Collection<F> featureset, C category, double probability) {
         this.featureset = featureset;
         this.category = category;
         this.probability = probability;
@@ -72,7 +72,7 @@ public class Classification<F, C> {
      * Retrieves the classification's probability.
      * @return
      */
-    public float getProbability() {
+    public double getProbability() {
         return this.probability;
     }
 

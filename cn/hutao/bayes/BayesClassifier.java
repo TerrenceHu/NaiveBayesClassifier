@@ -22,12 +22,12 @@ public class BayesClassifier<F, C> extends Classifier<F, C> {
      * @param category The category to test for.
      * @return The product of all feature probabilities.
      */
-    private float featuresProbabilityProduct(Collection<F> features, C category) {
-        float product = 1.0f;
+    private double featuresProbabilityLogSum(Collection<F> features, C category) {
+        double logSum = 1.0f;
         for (F feature : features) {
-            product *= this.featureWeighedAverage(feature, category);
+            logSum += Math.log(this.featureWeighedAverage(feature, category));
         }
-        return product;
+        return logSum;
     }
 
     /**
@@ -39,10 +39,10 @@ public class BayesClassifier<F, C> extends Classifier<F, C> {
      * @return The probability that the features can be classified as the
      *    category.
      */
-    private float categoryProbability(Collection<F> features, C category) {
-        return ((float) this.categoryCount(category)
-                    / (float) this.getCategoriesTotal())
-                * featuresProbabilityProduct(features, category);
+    private double categoryProbability(Collection<F> features, C category) {
+        return Math.log(((double) this.categoryCount(category)
+                    / (double) this.getCategoriesTotal()))
+                + featuresProbabilityLogSum(features, category);
     }
 
     /**
@@ -66,7 +66,7 @@ public class BayesClassifier<F, C> extends Classifier<F, C> {
 
                     @Override
                     public int compare(Classification<F, C> o1, Classification<F, C> o2) {
-                        int toReturn = Float.compare(o1.getProbability(), o2.getProbability());
+                        int toReturn = Double.compare(o1.getProbability(), o2.getProbability());
                         if ((toReturn == 0) && !o1.getCategory().equals(o2.getCategory())) {
                             toReturn = -1;
                         }

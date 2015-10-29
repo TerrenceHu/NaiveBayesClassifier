@@ -8,6 +8,6 @@ package cn.hutao.bayes;
  */
 public interface FeatureProbability<F, C> {
 
-    public float featureProbability(F feature, C category);
+    public double featureProbability(F feature, C category);
 
 }

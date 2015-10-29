@@ -267,12 +267,12 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * {@inheritDoc}
      */
     @Override
-    public float featureProbability(F feature, C category) {
+    public double featureProbability(F feature, C category) {
         if (this.categoryCount(category) == 0) {
             return 0;
         }
-        return (float) this.featureCount(feature, category)
-                / (float) this.categoryCount(category);
+        return (double) this.featureCount(feature, category)
+                / (double) this.categoryCount(category);
     }
 
     /**
@@ -284,7 +284,7 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @param category The category.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(F feature, C category) {
+    public double featureWeighedAverage(F feature, C category) {
         return this.featureWeighedAverage(feature, category, null, 1.0f, 0.5f);
     }
 
@@ -298,7 +298,7 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @param calculator The calculating object.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(F feature, C category,
+    public double featureWeighedAverage(F feature, C category,
                                        FeatureProbability<F, C> calculator) {
         return this.featureWeighedAverage(feature, category, calculator, 1.0f, 0.5f);
     }
@@ -314,10 +314,9 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @param weight The feature weight.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(F feature, C category,
-                                       FeatureProbability<F, C> calculator, float weight) {
-        return this.featureWeighedAverage(feature, category,
-                calculator, weight, 0.5f);
+    public double featureWeighedAverage(F feature, C category,
+                                       FeatureProbability<F, C> calculator, double weight) {
+        return this.featureWeighedAverage(feature, category, calculator, weight, 0.5f);
     }
 
     /**
@@ -332,23 +331,18 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @param assumedProbability The assumed probability.
      * @return The weighed average probability.
      */
-    public float featureWeighedAverage(F feature, C category,
-                                       FeatureProbability<F, C> calculator, float weight,
-                                       float assumedProbability) {
-
-        /*
-         * use the given calculating object or the default method to calculate
-         * the probability that the given feature occurred in the given
-         * category.
-         */
-        final float basicProbability =
+    public double featureWeighedAverage(F feature, C category,
+                                       FeatureProbability<F, C> calculator, double weight,
+                                       double assumedProbability) {
+        double basicProbability =
                 (calculator == null)
                     ? this.featureProbability(feature, category)
                             : calculator.featureProbability(feature, category);
 
         Integer totals = this.totalFeatureCount.get(feature);
-        if (totals == null)
+        if (totals == null) {
             totals = 0;
+        }
         return (weight * assumedProbability + totals  * basicProbability)
                 / (weight + totals);
     }
