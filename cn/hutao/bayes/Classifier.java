@@ -244,12 +244,32 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @return The number of occurrences of the feature in the category.
      */
     public int featureCount(F feature, C category) {
-        Dictionary<F, Integer> features =
-                this.featureCountPerCategory.get(category);
-        if (features == null)
+        Dictionary<F, Integer> features = this.featureCountPerCategory.get(category);
+        if (features == null) {
             return 0;
+        }
         Integer count = features.get(feature);
         return (count == null) ? 0 : count.intValue();
+    }
+
+    /**
+     * Retrieves the total number of features in the given category.
+     *
+     * @param category The category, of which the total feature count should be retrieved.
+     * @return The total number of features in the category.
+     */
+    public int categoryFeatureCount(C category) {
+        Dictionary<F, Integer> features = this.featureCountPerCategory.get(category);
+        if (features == null) {
+            return 0;
+        }
+
+        int toReturn = 0;
+        for (Enumeration<Integer> e = features.elements(); e.hasMoreElements();) {
+            toReturn += e.nextElement();
+        }
+
+        return toReturn;
     }
 
     /**
@@ -268,11 +288,16 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      */
     @Override
     public double featureProbability(F feature, C category) {
+        return this.featureProbability(feature, category, 1);
+    }
+
+    public double featureProbability(F feature, C category, double lambda) {
         if (this.categoryCount(category) == 0) {
             return 0;
         }
-        return (double) this.featureCount(feature, category)
-                / (double) this.categoryCount(category);
+        int totalFeatureCount = this.totalFeatureCount.size();
+        return ((double) this.featureCount(feature, category) + lambda)
+                / ((double) this.categoryFeatureCount(category) + totalFeatureCount * lambda);
     }
 
     /**
@@ -285,7 +310,7 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      * @return The weighed average probability.
      */
     public double featureWeighedAverage(F feature, C category) {
-        return this.featureWeighedAverage(feature, category, null, 1.0f, 0.5f);
+        return this.featureWeighedAverage(feature, category, null);
     }
 
     /**
@@ -300,51 +325,9 @@ public abstract class Classifier<F, C> implements FeatureProbability<F, C> {
      */
     public double featureWeighedAverage(F feature, C category,
                                        FeatureProbability<F, C> calculator) {
-        return this.featureWeighedAverage(feature, category, calculator, 1.0f, 0.5f);
-    }
-
-    /**
-     * Retrieves the weighed average P(feature|category) with
-     * the given weight and an assumed probability of 0.5 and the
-     * given object to use for probability calculation.
-     *
-     * @param feature The feature, which probability to calculate.
-     * @param category The category.
-     * @param calculator The calculating object.
-     * @param weight The feature weight.
-     * @return The weighed average probability.
-     */
-    public double featureWeighedAverage(F feature, C category,
-                                       FeatureProbability<F, C> calculator, double weight) {
-        return this.featureWeighedAverage(feature, category, calculator, weight, 0.5f);
-    }
-
-    /**
-     * Retrieves the weighed average P(feature|category) with
-     * the given weight, the given assumed probability and the given object to
-     * use for probability calculation.
-     *
-     * @param feature The feature, which probability to calculate.
-     * @param category The category.
-     * @param calculator The calculating object.
-     * @param weight The feature weight.
-     * @param assumedProbability The assumed probability.
-     * @return The weighed average probability.
-     */
-    public double featureWeighedAverage(F feature, C category,
-                                       FeatureProbability<F, C> calculator, double weight,
-                                       double assumedProbability) {
-        double basicProbability =
-                (calculator == null)
-                    ? this.featureProbability(feature, category)
-                            : calculator.featureProbability(feature, category);
-
-        Integer totals = this.totalFeatureCount.get(feature);
-        if (totals == null) {
-            totals = 0;
-        }
-        return (weight * assumedProbability + totals  * basicProbability)
-                / (weight + totals);
+        return (calculator == null)
+                        ? this.featureProbability(feature, category)
+                        : calculator.featureProbability(feature, category);
     }
 
     /**
